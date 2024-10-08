@@ -116,12 +116,12 @@ def send_alarm():
     # Message preparing
     message_template = (
     f"🚨*Alarm Detected*\n\n"
-    f"{'Name'.ljust(21)}: {escape_markdown(device_data.get('name', 'N/A'))}\n"
-    f"{'Lane'.ljust(23)}: {escape_markdown(device_data.get('lane', 'N/A'))}\n"
-    f"{'Value'.ljust(23)}: {escape_markdown(str(device_data.get('value', 'N/A')))}\n"
-    f"{'Status'.ljust(22)}: {escape_markdown(device_data.get('status', 'N/A'))} 🔴\n"
-    f"{'Date'.ljust(24)}: {escape_markdown(formatted_send_date)}\n"
-    f"{'Location'.ljust(20)}: {escape_markdown(str(device_data.get('location_id', 'N/A')))}\n"
+    f"{'Name'.ljust(10)}: {escape_markdown(device_data.get('name', 'N/A'))}\n"
+    f"{'Lane'.ljust(12)}: {escape_markdown(device_data.get('lane', 'N/A'))}\n"
+    f"{'Value'.ljust(11)}: {escape_markdown(str(device_data.get('value', 'N/A')))} Volt\n"
+    f"{'Status'.ljust(11)}: {escape_markdown(device_data.get('status', 'N/A'))} 🔴\n"
+    f"{'Date'.ljust(12)}: {escape_markdown(formatted_send_date)}\n"
+    f"{'Location'.ljust(9)}: {escape_markdown(str(device_data.get('location', 'N/A')))}\n"
     )
     
     for recipient in recipients:
