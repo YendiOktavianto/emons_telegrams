@@ -107,8 +107,8 @@ def send_alarm():
     
     raw_send_date = device_data.get('send_date', 'N/A')
     try:
-        parsed_date = datetime.strptime(raw_send_date, "%Y-%m-%dT%H:%M:%S")
-        formatted_send_date = parsed_date.strftime("%B %d, %Y %I:%M:%S %p")
+        parsed_date = datetime.strptime(raw_send_date, "%Y-%m-%dT%H:%M:%SZ")
+        formatted_send_date = parsed_date.strftime("%d %B %Y %H:%M:%S")
     except ValueError:
         formatted_send_date = raw_send_date
 
@@ -142,4 +142,4 @@ def escape_markdown(text):
     return ''.join(f'\\{char}' if char in escape_chars else char for char in text)
 
 if __name__ == '__main__':
-    app.run(debug=False, port=5000) # debug False => hidden log in production mode for security reason
+    app.run(debug=False, port=5000)
