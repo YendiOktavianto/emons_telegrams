@@ -105,19 +105,17 @@ def send_alarm():
     if not recipients:
         return jsonify({"error": "No recipients provided"}), 400
     
-    # Parse and format
     raw_send_date = device_data.get('send_date', 'N/A')
     try:
         parsed_date = datetime.strptime(raw_send_date, "%Y-%m-%dT%H:%M:%S")
-        formatted_send_date = parsed_date.strftime("%d %B %Y %H:%M:%S")  
+        formatted_send_date = parsed_date.strftime("%B %d, %Y %I:%M:%S %p")
     except ValueError:
         formatted_send_date = raw_send_date
     
-    # Message preparing
     message_template = (
     f"🚨*Alarm Detected*\n\n"
     f"{'Name'.ljust(10)}: {escape_markdown(device_data.get('name', 'N/A'))}\n"
-    f"{'Lane'.ljust(12)}: {escape_markdown(device_data.get('lane', 'N/A'))}\n"
+    f"{'Line'.ljust(12)}: {escape_markdown(device_data.get('lane', 'N/A'))}\n"
     f"{'Value'.ljust(11)}: {escape_markdown(str(device_data.get('value', 'N/A')))} Volt\n"
     f"{'Status'.ljust(11)}: {escape_markdown(device_data.get('status', 'N/A'))} 🔴\n"
     f"{'Date'.ljust(12)}: {escape_markdown(formatted_send_date)}\n"
