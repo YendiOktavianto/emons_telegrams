@@ -94,6 +94,7 @@ def send_alarm():
         return jsonify({"error": "API validation failed, alarm not sent."}), 400
     
     data = request.json 
+    # print("Received JSON Data:", data)
     if not data:
         return jsonify({"error": "No data provided"}), 400
     
@@ -122,7 +123,7 @@ def send_alarm():
     f"{'Value'.ljust(11)}: {escape_markdown(str(device_data.get('value', 'N/A')))} Volt\n"
     f"{'Status'.ljust(11)}: {escape_markdown(device_data.get('status', 'N/A'))} 🔴\n"
     f"{'Date'.ljust(12)}: {escape_markdown(formatted_send_date)}\n"
-    f"{'Location'.ljust(9)}: {escape_markdown(str(device_data.get('location', 'N/A')))}\n"
+    f"{'Location'.ljust(9)}: IPB ARL \- {escape_markdown(str(device_data.get('location', 'N/A')))}\n"
     )
     
     for recipient in recipients:
