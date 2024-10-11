@@ -111,11 +111,14 @@ def send_alarm():
         formatted_send_date = parsed_date.strftime("%B %d, %Y %I:%M:%S %p")
     except ValueError:
         formatted_send_date = raw_send_date
+
+    raw_lane = device_data.get('lane', 'N/A')
+    formatted_lane = f"{raw_lane[0]}-{raw_lane[1]}" if len(raw_lane) == 2 else raw_lane
     
     message_template = (
     f"🚨*Alarm Detected*\n\n"
     f"{'Name'.ljust(10)}: {escape_markdown(device_data.get('name', 'N/A'))}\n"
-    f"{'Line'.ljust(12)}: {escape_markdown(device_data.get('lane', 'N/A'))}\n"
+    f"{'Line'.ljust(13)}: {escape_markdown(formatted_lane)}\n"
     f"{'Value'.ljust(11)}: {escape_markdown(str(device_data.get('value', 'N/A')))} Volt\n"
     f"{'Status'.ljust(11)}: {escape_markdown(device_data.get('status', 'N/A'))} 🔴\n"
     f"{'Date'.ljust(12)}: {escape_markdown(formatted_send_date)}\n"
