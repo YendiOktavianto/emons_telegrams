@@ -94,7 +94,9 @@ def send_alarm():
         return jsonify({"error": "API validation failed, alarm not sent."}), 400
     
     data = request.json 
-    # print("Received JSON Data:", data)
+    print("Received JSON Data:")
+    print(json.dumps(data, indent=4))
+    
     if not data:
         return jsonify({"error": "No data provided"}), 400
     
