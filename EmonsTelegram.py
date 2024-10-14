@@ -125,7 +125,7 @@ def send_alarm():
     
     message_template = (
     f"🚨*Alarm Detected*\n\n"
-    f"{'Name'.ljust(10)}: {escape_markdown(device_data.get('name', 'N/A'))}\n"
+    f"{'Name'.ljust(10)}: {escape_markdown(device_data.get('name', 'N/A').capitalize())}\n"
     f"{'Line'.ljust(13)}: {escape_markdown(formatted_lane)}\n"
     f"{'Value'.ljust(11)}: {escape_markdown(str(device_data.get('value', 'N/A')))} Volt\n"
     f"{'Status'.ljust(11)}: {escape_markdown(device_data.get('status', 'N/A'))} 🔴\n"
