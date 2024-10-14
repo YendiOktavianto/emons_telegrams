@@ -106,9 +106,16 @@ def send_alarm():
     if not recipients:
         return jsonify({"error": "No recipients provided"}), 400
     
+    # Ambil field site_name
+    site_name = data.get('site_name', 'N/A')
+    
     raw_send_date = device_data.get('send_date', 'N/A')
     try:
-        parsed_date = datetime.strptime(raw_send_date, "%Y-%m-%dT%H:%M:%SZ")
+        if "." in raw_send_date:
+            parsed_date = datetime.strptime(raw_send_date, "%Y-%m-%dT%H:%M:%S.%fZ")
+        else:
+            parsed_date = datetime.strptime(raw_send_date, "%Y-%m-%dT%H:%M:%SZ")
+        
         formatted_send_date = parsed_date.strftime("%d %B %Y %H:%M:%S")
     except ValueError:
         formatted_send_date = raw_send_date
@@ -123,7 +130,7 @@ def send_alarm():
     f"{'Value'.ljust(11)}: {escape_markdown(str(device_data.get('value', 'N/A')))} Volt\n"
     f"{'Status'.ljust(11)}: {escape_markdown(device_data.get('status', 'N/A'))} 🔴\n"
     f"{'Date'.ljust(12)}: {escape_markdown(formatted_send_date)}\n"
-    f"{'Location'.ljust(9)}: IPB ARL \- {escape_markdown(str(device_data.get('location', 'N/A')))}\n"
+    f"{'Location'.ljust(9)}: {escape_markdown(site_name)} \- {escape_markdown(str(device_data.get('location', 'N/A')))}\n"
     )
     
     for recipient in recipients:
