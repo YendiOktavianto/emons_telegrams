@@ -12,6 +12,20 @@ app = Flask(__name__)
 # Load env var 
 load_dotenv()
 
+# Environment-specific configurations
+FLASK_ENV = os.getenv('FLASK_ENV', 'production').lower()
+
+# Set logging configuration based on the environment
+if FLASK_ENV == 'development':
+    logging_level = logging.DEBUG
+    app.config['DEBUG'] = True  # Enable Flask debugger
+else:
+    logging_level = logging.INFO
+    app.config['DEBUG'] = False  # Disable Flask debugger
+
+# Logger for security tracking
+logging.basicConfig(level=logging_level, format='%(asctime)s - %(levelname)s - %(message)s')
+
 # Ensure env var are loaded perfectly
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 IP_TOKEN = os.getenv('IP_TOKEN')
@@ -21,12 +35,8 @@ REST_DOMAIN = os.getenv('REST_DOMAIN')
 AUTH_CODE = os.getenv('AUTH_CODE')
 AUTH_TOKEN = os.getenv('AUTH_TOKEN')
 
+# URL/source
 API_URL = "{}:{}/{}".format(DEFAULT_IP, DEFAULT_PORT, REST_DOMAIN)
-
-# Logger for security tracking
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-
 
 # Fungsi untuk mengirim notifikasi ke penerima tertentu
 def send_telegram_notification(message, chat_id):
@@ -42,10 +52,10 @@ def send_telegram_notification(message, chat_id):
         response = requests.post(telegram_url, data=payload, timeout=5)
         response.raise_for_status()
         if response.status_code == 200:
-            print(f"Notifikasi berhasil dikirim ke chat ID: {chat_id}.")
+            logging.info(f"Notification sent to chat ID: {chat_id}.")
         else:
-            print(f"Error sending message to {chat_id}: {response.status_code}")
-            print(f"Response: {response.json()}")
+            logging.error(f"Error sending message to {chat_id}: {response.status_code}")
+            logging.error(f"Response: {response.json()}")
     except requests.RequestException as e:
         logging.error(f"Failed to send message to {chat_id}: {e}")
         abort(500, description="Failed to send notification.")
@@ -94,8 +104,7 @@ def send_alarm():
         return jsonify({"error": "API validation failed, alarm not sent."}), 400
     
     data = request.json 
-    print("Received JSON Data:")
-    print(json.dumps(data, indent=4))
+    logging.debug("Received JSON Data:\n%s", json.dumps(data, indent=4))
     
     if not data:
         return jsonify({"error": "No data provided"}), 400
@@ -152,4 +161,4 @@ def escape_markdown(text):
     return ''.join(f'\\{char}' if char in escape_chars else char for char in text)
 
 if __name__ == '__main__':
-    app.run(debug=False, port=5000)
+    app.run(debug=(FLASK_ENV == 'development'), port=5000)
