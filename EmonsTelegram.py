@@ -53,6 +53,7 @@ def send_telegram_notification(message, chat_id):
         response.raise_for_status()
         if response.status_code == 200:
             logging.info(f"Notification sent to chat ID: {chat_id}.")
+            logging.info(f"Response result from telegram action: {response.json()}")
         else:
             logging.error(f"Error sending message to {chat_id}: {response.status_code}")
             logging.error(f"Response: {response.json()}")
@@ -85,6 +86,7 @@ def hit_ip_address_api(tenant):
         if response_data and response_data.get('status') and response_data.get('param'):
             api_token = response_data['param']['token']
             if api_token == IP_TOKEN:
+                logging.info(f"API token matched: {api_token}")
                 return True 
             else:
                 logging.warning("API token mismatch.")
@@ -105,20 +107,24 @@ def send_alarm():
     
     data = request.json 
     logging.debug("Received JSON Data:\n%s", json.dumps(data, indent=4))
+    logging.info(f"The data object is {data}")
     
     if not data:
         return jsonify({"error": "No data provided"}), 400
     
     device_data = data.get('device_data', {})
+    logging.info(f"The device data is {device_data}")
     if not device_data:
         return jsonify({"error": "No device data provided"}), 400
     
     recipients = data.get('recipients', [])
+    logging.info(f"The recipients is {recipients}")
     if not recipients:
         return jsonify({"error": "No recipients provided"}), 400
     
     # Ambil field site_name
     site_name = data.get('site_name', 'N/A')
+    logging.info(f"The site name is {site_name}")
     
     raw_send_date = device_data.get('send_date', 'N/A')
     try:
@@ -132,7 +138,9 @@ def send_alarm():
         formatted_send_date = raw_send_date
 
     raw_lane = device_data.get('lane', 'N/A')
+    logging.info(f"The raw lane is {raw_lane}")
     formatted_lane = f"{raw_lane[0]}-{raw_lane[1]}" if len(raw_lane) == 2 else raw_lane
+    logging.info(f"The formatted lane is {formatted_lane}")
     
     message_template = (
     f"🚨*Alarm Detected*\n\n"
