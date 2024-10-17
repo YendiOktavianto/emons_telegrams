@@ -122,6 +122,12 @@ def send_alarm():
     if not recipients:
         return jsonify({"error": "No recipients provided"}), 400
     
+    # Ambil nilai field value dan lakukan pengecekan jika <= 0
+    value = device_data.get('value', 0)
+    if value <= 0:
+        logging.warning("Value is less than or equal to 0. Notification will not be sent.")
+        return jsonify({"error": "Value is less than or equal to 0. Notification not sent."}), 400
+    
     # Ambil field site_name
     site_name = data.get('site_name', 'N/A')
     logging.info(f"The site name is {site_name}")
