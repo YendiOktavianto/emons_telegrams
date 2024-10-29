@@ -124,8 +124,8 @@ def send_alarm():
     
     # Ambil nilai field value dan lakukan pengecekan jika <= 0
     value = device_data.get('value', 0)
-    if value <= 0:
-        logging.warning("Value is less than or equal to 0. Notification will not be sent.")
+    if value < 0:
+        logging.warning("Value is less than 0. Notification will not be sent.")
         return jsonify({"error": "Value is less than or equal to 0. Notification not sent."}), 400
     
     # Ambil field site_name
