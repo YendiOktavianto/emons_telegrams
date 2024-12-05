@@ -59,15 +59,15 @@ def send_telegram_notification(message, chat_id):
             logging.error(f"Response: {response.json()}")
     except requests.RequestException as e:
         logging.error(f"Failed to send message to {chat_id}: {e}")
-        abort(500, description="Failed to send notification.")
+        # abort(500, description="Failed to send notification.")
 
 # Fungsi untuk melakukan hit ke API yang ditunjukkan di gambar
 def hit_ip_address_api(tenant):
     headers = {
         "Content-Type": "application/json",
         "tenant": tenant,
-        "Authorization": "{AUTH_CODE}",
-        "token": "{AUTH_TOKEN}"
+        "Authorize": AUTH_CODE,
+        "token": AUTH_TOKEN
     }
 
     payload = {
@@ -77,6 +77,9 @@ def hit_ip_address_api(tenant):
         "type": 1,
         "tenant": tenant
     }
+
+    print(headers)
+    print(payload)
 
     try:
         response = requests.post(API_URL, json=payload, headers=headers, timeout=5)
@@ -96,7 +99,7 @@ def hit_ip_address_api(tenant):
             return False
     except requests.RequestException as e:
         logging.error(f"Error contacting API: {e}")
-        abort(500, description="API request failed.")
+        # abort(500, description="API request failed.")
         return False
 
 # Route to handle alarm notification sent to telegram
@@ -117,56 +120,61 @@ def send_alarm():
     if not device_data:
         return jsonify({"error": "No device data provided"}), 400
     
+    data_alarm = device_data.get('dataAlarm', [])
+    logging.info(f"The dataAlarm is {data_alarm}")
+    if not data_alarm:
+        return jsonify({"error": "No dataAlarm provided"}), 400
+    
     recipients = data.get('recipients', [])
     logging.info(f"The recipients is {recipients}")
     if not recipients:
         return jsonify({"error": "No recipients provided"}), 400
     
-    # Ambil nilai field value dan lakukan pengecekan jika <= 0
-    value = device_data.get('value', 0)
-    if value < 0:
-        logging.warning("Value is less than 0. Notification will not be sent.")
-        return jsonify({"error": "Value is less than or equal to 0. Notification not sent."}), 400
-    
     # Ambil field site_name
     site_name = data.get('site_name', 'N/A')
     logging.info(f"The site name is {site_name}")
     
-    raw_send_date = device_data.get('send_date', 'N/A')
-    try:
-        if "." in raw_send_date:
-            parsed_date = datetime.strptime(raw_send_date, "%Y-%m-%dT%H:%M:%S.%fZ")
-        else:
-            parsed_date = datetime.strptime(raw_send_date, "%Y-%m-%dT%H:%M:%SZ")
-        
-        formatted_send_date = parsed_date.strftime("%d %B %Y %H:%M:%S")
-    except ValueError:
-        formatted_send_date = raw_send_date
-
-    raw_lane = device_data.get('lane', 'N/A')
-    logging.info(f"The raw lane is {raw_lane}")
-    formatted_lane = f"{raw_lane[0]}-{raw_lane[1]}" if len(raw_lane) == 2 else raw_lane
-    logging.info(f"The formatted lane is {formatted_lane}")
-    
-    message_template = (
-    f"🚨*Alarm Detected*\n\n"
-    f"{'Name'.ljust(10)}: {escape_markdown(device_data.get('name', 'N/A').capitalize())}\n"
-    f"{'Line'.ljust(13)}: {escape_markdown(formatted_lane)}\n"
-    f"{'Value'.ljust(11)}: {escape_markdown(str(device_data.get('value', 'N/A')))} Volt\n"
-    f"{'Status'.ljust(11)}: {escape_markdown(device_data.get('status', 'N/A'))} 🔴\n"
-    f"{'Date'.ljust(12)}: {escape_markdown(formatted_send_date)}\n"
-    f"{'Location'.ljust(9)}: {escape_markdown(site_name)} \- {escape_markdown(str(device_data.get('location', 'N/A')))}\n"
-    )
-    
-    for recipient in recipients:
-        name = recipient.get('name', 'N/A')
-        chat_id = recipient.get('chat_id')
-        
-        if not chat_id:
-            logging.warning(f"Missing chat ID for recipient: {recipient.get('name', 'N/A')}")
+    for alarm in data_alarm:
+        value = alarm.get('value', 0)
+        if value < 0:
+            logging.warning("Value is less than 0. Notification will not be sent.")
             continue
         
-        send_telegram_notification(message_template, chat_id)
+        raw_send_date = alarm.get('send_date', 'N/A')
+        try:
+            if "." in raw_send_date:
+                parsed_date = datetime.strptime(raw_send_date, "%Y-%m-%dT%H:%M:%S.%fZ")
+            else:
+                parsed_date = datetime.strptime(raw_send_date, "%Y-%m-%dT%H:%M:%SZ")
+            
+            formatted_send_date = parsed_date.strftime("%d %B %Y %H:%M:%S")
+        except ValueError:
+            formatted_send_date = raw_send_date
+
+        raw_lane = alarm.get('lane', 'N/A')
+        logging.info(f"The raw lane is {raw_lane}")
+        formatted_lane = f"{raw_lane[0]}-{raw_lane[1]}" if len(raw_lane) == 2 else raw_lane
+        logging.info(f"The formatted lane is {formatted_lane}")
+        
+        message_template = (
+        f"🚨*Alarm Detected*\n\n"
+        f"{'Name'.ljust(10)}: {escape_markdown(alarm.get('name', 'N/A').capitalize())}\n"
+        f"{'Line'.ljust(13)}: {escape_markdown(formatted_lane)}\n"
+        f"{'Value'.ljust(11)}: {escape_markdown(str(alarm.get('value', 'N/A')))} Volt\n"
+        f"{'Status'.ljust(11)}: {escape_markdown(alarm.get('status', 'N/A'))} 🔴\n"
+        f"{'Date'.ljust(12)}: {escape_markdown(formatted_send_date)}\n"
+        f"{'Location'.ljust(9)}: {escape_markdown(site_name)} \- {escape_markdown(str(alarm.get('location_id', 'N/A')))}\n"
+        )
+        
+        for recipient in recipients:
+            name = recipient.get('name', 'N/A')
+            chat_id = recipient.get('chat_id')
+            
+            if not chat_id:
+                logging.warning(f"Missing chat ID for recipient: {recipient.get('name', 'N/A')}")
+                continue
+            
+            send_telegram_notification(message_template, chat_id)
     
     return jsonify({"message": "Alarm notifications sent successfully"}), 200
 
