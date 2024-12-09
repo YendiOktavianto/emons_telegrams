@@ -78,9 +78,6 @@ def hit_ip_address_api(tenant):
         "tenant": tenant
     }
 
-    print(headers)
-    print(payload)
-
     try:
         response = requests.post(API_URL, json=payload, headers=headers, timeout=5)
         response.raise_for_status()
@@ -99,7 +96,7 @@ def hit_ip_address_api(tenant):
             return False
     except requests.RequestException as e:
         logging.error(f"Error contacting API: {e}")
-        # abort(500, description="API request failed.")
+        abort(500, description="API request failed.")
         return False
 
 # Route to handle alarm notification sent to telegram
