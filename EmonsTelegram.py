@@ -96,7 +96,7 @@ def hit_ip_address_api(tenant):
             return False
     except requests.RequestException as e:
         logging.error(f"Error contacting API: {e}")
-        abort(500, description="API request failed.")
+        # abort(500, description="API request failed.")
         return False
 
 # Route to handle alarm notification sent to telegram
@@ -117,10 +117,8 @@ def send_alarm():
     if not device_data:
         return jsonify({"error": "No device data provided"}), 400
     
-    data_alarm = device_data.get('dataAlarm', [])
-    logging.info(f"The dataAlarm is {data_alarm}")
-    if not data_alarm:
-        return jsonify({"error": "No dataAlarm provided"}), 400
+    if not device_data or len(device_data) == 0:
+        return jsonify({"error": "No Data Alarm Provided"}), 400
     
     recipients = data.get('recipients', [])
     logging.info(f"The recipients is {recipients}")
@@ -131,7 +129,7 @@ def send_alarm():
     site_name = data.get('site_name', 'N/A')
     logging.info(f"The site name is {site_name}")
     
-    for alarm in data_alarm:
+    for alarm in device_data:
         value = alarm.get('value', 0)
         if value < 0:
             logging.warning("Value is less than 0. Notification will not be sent.")
@@ -160,7 +158,7 @@ def send_alarm():
         f"{'Value'.ljust(11)}: {escape_markdown(str(alarm.get('value', 'N/A')))} Volt\n"
         f"{'Status'.ljust(11)}: {escape_markdown(alarm.get('status', 'N/A'))} 🔴\n"
         f"{'Date'.ljust(12)}: {escape_markdown(formatted_send_date)}\n"
-        f"{'Location'.ljust(9)}: {escape_markdown(site_name)} \- {escape_markdown(str(alarm.get('location_id', 'N/A')))}\n"
+        f"{'Location'.ljust(9)}: {escape_markdown(site_name)} \- {escape_markdown(str(alarm.get('location', 'N/A')))}\n"
         )
         
         for recipient in recipients:
