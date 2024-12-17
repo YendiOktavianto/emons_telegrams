@@ -6,27 +6,21 @@ import os
 from dotenv import load_dotenv
 import logging
 
-# init
 app = Flask(__name__)
 
-# Load env var 
 load_dotenv()
 
-# Environment-specific configurations
 FLASK_ENV = os.getenv('FLASK_ENV', 'production').lower()
 
-# Set logging configuration based on the environment
 if FLASK_ENV == 'development':
     logging_level = logging.DEBUG
-    app.config['DEBUG'] = True  # Enable Flask debugger
+    app.config['DEBUG'] = True  
 else:
     logging_level = logging.INFO
-    app.config['DEBUG'] = False  # Disable Flask debugger
+    app.config['DEBUG'] = False
 
-# Logger for security tracking
 logging.basicConfig(level=logging_level, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Ensure env var are loaded perfectly
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 IP_TOKEN = os.getenv('IP_TOKEN')
 DEFAULT_IP = os.getenv('DEFAULT_IP')
@@ -35,10 +29,9 @@ REST_DOMAIN = os.getenv('REST_DOMAIN')
 AUTH_CODE = os.getenv('AUTH_CODE')
 AUTH_TOKEN = os.getenv('AUTH_TOKEN')
 
-# URL/source
 API_URL = "{}:{}/{}".format(DEFAULT_IP, DEFAULT_PORT, REST_DOMAIN)
 
-# Fungsi untuk mengirim notifikasi ke penerima tertentu
+
 def send_telegram_notification(message, chat_id):
     telegram_url = f'https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage'
     
@@ -59,9 +52,9 @@ def send_telegram_notification(message, chat_id):
             logging.error(f"Response: {response.json()}")
     except requests.RequestException as e:
         logging.error(f"Failed to send message to {chat_id}: {e}")
-        # abort(500, description="Failed to send notification.")
+        abort(500, description="Failed to send notification.")
 
-# Fungsi untuk melakukan hit ke API yang ditunjukkan di gambar
+
 def hit_ip_address_api(tenant):
     headers = {
         "Content-Type": "application/json",
@@ -96,10 +89,10 @@ def hit_ip_address_api(tenant):
             return False
     except requests.RequestException as e:
         logging.error(f"Error contacting API: {e}")
-        # abort(500, description="API request failed.")
+        abort(500, description="API request failed.")
         return False
 
-# Route to handle alarm notification sent to telegram
+
 @app.route('/send_alarm', methods=['POST'])
 def send_alarm():
     if not hit_ip_address_api(tenant='alif'):
@@ -107,13 +100,13 @@ def send_alarm():
     
     data = request.json 
     logging.debug("Received JSON Data:\n%s", json.dumps(data, indent=4))
-    logging.info(f"The data object is {data}")
+    logging.info("The data object is:\n%s", json.dumps(data, indent=4, ensure_ascii=False))
     
     if not data:
         return jsonify({"error": "No data provided"}), 400
     
     device_data = data.get('device_data', {})
-    logging.info(f"The device data is {device_data}")
+    logging.info("The device data is:\n%s", json.dumps(device_data, indent=4, ensure_ascii=False))
     if not device_data:
         return jsonify({"error": "No device data provided"}), 400
     
@@ -121,11 +114,10 @@ def send_alarm():
         return jsonify({"error": "No Data Alarm Provided"}), 400
     
     recipients = data.get('recipients', [])
-    logging.info(f"The recipients is {recipients}")
+    logging.info("The recipients are:\n%s", json.dumps(recipients, indent=4, ensure_ascii=False))
     if not recipients:
         return jsonify({"error": "No recipients provided"}), 400
     
-    # Ambil field site_name
     site_name = data.get('site_name', 'N/A')
     logging.info(f"The site name is {site_name}")
     
